@@ -1,0 +1,35 @@
+{
+    "manifest_version": 3,
+    "browser_specific_settings": {
+  "gecko": {
+    "id": "{25371923-5283-1420-4587-567812345678}"
+  }
+}
+
+,
+    "name": "pulms-pdf-downloader",
+    "version": "1.0",
+    "icons": {
+    "16": "./assets/icon.png",
+    "48": "./assets/icon.png",
+    "128": "./assets/icon.png"
+  },
+    "permissions": [
+      "storage",
+      "activeTab",
+      "system.cpu",
+      "system.memory",
+      "system.storage",
+      "system.display",
+      "tabs",
+      "scripting",
+    "webRequest","declarativeNetRequest",
+      "declarativeNetRequestFeedback"  ],
+    "host_permissions": [
+      "https://api.paruluniversity.ac.in/*",
+      "<all_urls>"
+    ],
+    "background": {
+      "service_worker": "dist/extension.js"
+    }
+  }
