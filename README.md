@@ -1,15 +1,32 @@
 # pulms-pdf-maker
 
-To install dependencies:
+A simple extension that binds a download button to the currently viewing document on the pulms site, which doesn't provide any download button.
+
+## Firefox
+
+You can get it from [here](https://addons.mozilla.org/en-US/firefox/addon/pulms-pdf-downloader).
+
+## Chrome
+
+1. Clone the repo.
+2. Go to `chrome://extensions/`.
+3. Enable Developer mode.
+4. Click on "Load unpacked" and select the folder where the `manifest.json` is located.
+
+## Development
+
+### Install Dependencies
 
 ```bash
 bun install
 ```
 
-To run:
+### To Run
 
 ```bash
-bun run index.ts
+bun run build
 ```
 
-This project was created using `bun init` in bun v1.1.14. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+Then refresh/reload the extension.
+
+---
