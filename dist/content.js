@@ -1,8 +1,8 @@
 // src/content.ts
 var addButtonToPage = function(url) {
   console.log("Adding button to page");
-  const button = document.createElement("a");
-  button.textContent = "Download PDF";
+  const button = document.createElement("div");
+  button.id = "dwnldbtn";
   button.style.cssText = `
         position: fixed;
         top: 20px;
@@ -17,24 +17,23 @@ var addButtonToPage = function(url) {
         font-size: 16px;
         font-weight: 500;
         text-align: center;
-        text-decoration: none;
         cursor: pointer;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         transition: background-color 0.3s, transform 0.2s;
     `;
-  button.addEventListener("mouseover", () => {
-    button.style.backgroundColor = "#0056b3";
-  });
-  button.addEventListener("mouseout", () => {
-    button.style.backgroundColor = "#007bff";
-  });
-  button.addEventListener("click", (event) => {
+  const link = document.createElement("a");
+  link.textContent = "Download PDF";
+  link.style.cssText = `
+        color: inherit;
+        text-decoration: none;
+    `;
+  link.setAttribute("download", "download.pdf");
+  link.href = url;
+  link.addEventListener("click", (event) => {
     event.preventDefault();
     downloadFile(url);
   });
-  button.setAttribute("download", "download.pdf");
-  button.setAttribute("id", "pulmsd");
-  button.href = url;
+  button.appendChild(link);
   document.body.appendChild(button);
   downloadButton = button;
   const observer = new MutationObserver((mutations) => {
@@ -55,8 +54,9 @@ var addButtonToPage = function(url) {
   observer.observe(document.body, { childList: true, subtree: true });
 };
 var removeDownloadButton = function() {
-  if (downloadButton && downloadButton.parentNode) {
-    downloadButton.parentNode.removeChild(downloadButton);
+  const buttonToRemove = document.getElementById("dwnldbtn");
+  if (buttonToRemove && buttonToRemove.parentNode) {
+    buttonToRemove.parentNode.removeChild(buttonToRemove);
     downloadButton = null;
   }
 };
@@ -77,6 +77,7 @@ var downloadFile = function(url) {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(blobUrl);
+      removeDownloadButton();
     } else {
       console.error("Failed to download file. Status:", xhr.status);
     }

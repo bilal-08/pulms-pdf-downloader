@@ -1,6 +1,6 @@
 console.log("Content script loaded");
 
-let downloadButton:any = null;
+let downloadButton: any = null;
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     console.log("Message received in content script:", request);
@@ -17,10 +17,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true;
 });
 
-function addButtonToPage(url:string) {
+function addButtonToPage(url: string) {
     console.log("Adding button to page");
-    const button = document.createElement('a');
-    button.textContent = 'Download PDF';
+    const button = document.createElement('div');
+    button.id = 'dwnldbtn';
     button.style.cssText = `
         position: fixed;
         top: 20px;
@@ -35,28 +35,26 @@ function addButtonToPage(url:string) {
         font-size: 16px;
         font-weight: 500;
         text-align: center;
-        text-decoration: none;
         cursor: pointer;
         box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
         transition: background-color 0.3s, transform 0.2s;
     `;
-    
-    button.addEventListener('mouseover', () => {
-        button.style.backgroundColor = "#0056b3"; /* Darker shade of primary color */
-    });
 
-    button.addEventListener('mouseout', () => {
-        button.style.backgroundColor = "#007bff"; /* Primary color */
-    });
-
-    button.addEventListener('click', (event) => {
+    const link = document.createElement('a');
+    link.textContent = 'Download PDF';
+    link.style.cssText = `
+        color: inherit;
+        text-decoration: none;
+    `;
+    link.setAttribute('download', 'download.pdf');
+    link.href = url;
+    link.addEventListener('click', (event) => {
         event.preventDefault();
         downloadFile(url);
     });
 
-    button.setAttribute('download', 'download.pdf');
-    button.setAttribute('id', 'pulmsd');
-    button.href = url;
+
+    button.appendChild(link);
 
     document.body.appendChild(button);
     downloadButton = button;
@@ -81,13 +79,14 @@ function addButtonToPage(url:string) {
 }
 
 function removeDownloadButton() {
-    if (downloadButton && downloadButton.parentNode) {
-        downloadButton.parentNode.removeChild(downloadButton);
+    const buttonToRemove = document.getElementById('dwnldbtn');
+    if (buttonToRemove && buttonToRemove.parentNode) {
+        buttonToRemove.parentNode.removeChild(buttonToRemove);
         downloadButton = null;
     }
 }
 
-function downloadFile(url:string) {
+function downloadFile(url: string) {
     console.log("Downloading file:", url);
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
@@ -104,6 +103,7 @@ function downloadFile(url:string) {
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(blobUrl);
+            removeDownloadButton(); // Remove the button after the download
         } else {
             console.error('Failed to download file. Status:', xhr.status);
         }
