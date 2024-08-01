@@ -6,7 +6,7 @@ A simple extension that binds a download button to the currently viewing documen
 
 You can get it from [here](https://addons.mozilla.org/en-US/firefox/addon/pulms-pdf-downloader).
 
-## Chrome
+## Chrome / Edge
 
 1. Clone the repo.
 2. Go to `chrome://extensions/`.
