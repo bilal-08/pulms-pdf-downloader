@@ -1,5 +1,5 @@
 // src/extension.ts
-var addRule = function() {
+function addRule() {
   chrome.declarativeNetRequest.updateDynamicRules({
     removeRuleIds: [1],
     addRules: [{
@@ -27,8 +27,8 @@ var addRule = function() {
       console.log("Rule added successfully");
     }
   });
-};
-var injectContentScript = function(tabId) {
+}
+function injectContentScript(tabId) {
   return new Promise((resolve, reject) => {
     chrome.scripting.executeScript({
       target: { tabId },
@@ -43,10 +43,10 @@ var injectContentScript = function(tabId) {
       }
     });
   });
-};
-var sendMessageToContentScript = function(tabId, message) {
+}
+function sendMessageToContentScript(tabId, message) {
   return new Promise((resolve, reject) => {
-    chrome.tabs.sendMessage(tabId, message, function(response) {
+    chrome.tabs.sendMessage(tabId, message, (response) => {
       if (chrome.runtime.lastError) {
         console.log(chrome.runtime.lastError.message);
         resolve(false);
@@ -56,27 +56,52 @@ var sendMessageToContentScript = function(tabId, message) {
       }
     });
   });
-};
+}
+function debounceSendMessage(tabId) {
+  if (debounceTimeout !== null) {
+    clearTimeout(debounceTimeout);
+  }
+  debounceTimeout = setTimeout(async () => {
+    try {
+      await injectContentScript(tabId);
+      const messageSent = await sendMessageToContentScript(tabId, { action: "addDownloadButton", urls: interceptedUrls });
+      if (messageSent) {
+        console.log("Message sent to content script");
+        interceptedUrls = [];
+      } else {
+        console.log("Failed to send message to content script");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  }, 500);
+}
 console.log("Background script loaded");
 var { RuleActionType, HeaderOperation, ResourceType } = chrome.declarativeNetRequest;
 chrome.runtime.onInstalled.addListener(addRule);
 console.log("Background script loaded");
+var interceptedUrls = [];
+var debounceTimeout = null;
 chrome.webRequest.onBeforeRequest.addListener(async (details) => {
-  if (details.url.includes("s3.ap-southeast-1.amazonaws.com/parul-private-cloud-media")) {
-    console.log("Request intercepted:", details.url);
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    if (tabs[0]) {
+  const url = details.url;
+  console.log("Request intercepted:", url);
+  const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (tabs[0]) {
+    if (url.includes(".pdf")) {
       try {
         await injectContentScript(tabs[0].id);
-        const messageSent = await sendMessageToContentScript(tabs[0].id, { action: "addDownloadButton", url: details.url });
+        const messageSent = await sendMessageToContentScript(tabs[0].id, { action: "addDownloadButton", urls: url });
         if (messageSent) {
-          console.log("Message sent to content script");
+          console.log("Message sent to content script for PDF URL");
         } else {
-          console.log("Failed to send message to content script");
+          console.log("Failed to send message to content script for PDF URL");
         }
       } catch (error) {
         console.error("Error:", error);
       }
+    } else {
+      interceptedUrls.push(url);
+      debounceSendMessage(tabs[0].id);
     }
   }
 }, { urls: ["*://*.amazonaws.com/*"] });

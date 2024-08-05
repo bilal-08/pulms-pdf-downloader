@@ -7,7 +7,7 @@
     "@types/chrome": "^0.0.268"
   },
   "scripts": {
-    "build": "bun build src/* --outdir=dist"
+    "build": "bun build src/**/* --outdir=dist"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
